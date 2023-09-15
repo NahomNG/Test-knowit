@@ -128,7 +128,7 @@ function update() {
     ) {
 
       gamestate.Player.isJumping = false;
-      gamestate.Player.ySpeed = 1;
+      gamestate.Player.ySpeed = -10;
 
       if (index === gamestate.Platforms.length - 1) {
         gamestate.Player.isWinning = true;
