@@ -38,8 +38,8 @@ jobs:
 
     - name: Configure AWS Credentials
       run: |
-        aws configure set aws_access_key_id AKIA34SNR4GUFUNY4AE2
-        aws configure set aws_secret_access_key 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
+        aws configure set accesskey AKIA34SNR4GUFUNY4AE2
+        aws configure set secretaccess RfurH+yP/BAcgWoLU7ZjPkmY33n8O927GZIfU4LG
       env:
         AWS_DEFAULT_REGION: us-east-1  # Change this to your AWS region
 
