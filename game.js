@@ -1,170 +1,191 @@
-let canvasElement = document.getElementById("gameCanvas");
-let ctx = canvasElement.getContext("2d");
-console.log("Test");
-const constants = {
-  PLAYER_WIDTH: 50,
-  PLAYER_HEIGHT: 50,
-  PLATFORM_WIDTH: 100,
-  PLATFORM_HEIGHT: 20,
-  GRAVITY: 1,
-  JUMP_FORCE: 15,
-  PLAYER_SPEED: 5,
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Platform Platform Game</title>
+    <style>
+        body {
+            background-color: #f0f0f0; /* Background color for the page */
+        }
 
-const gamestate = {
-  Player: {
-    x: canvasElement.width / 2 - constants.PLAYER_WIDTH / 2,
-    y: canvasElement.height - constants.PLAYER_HEIGHT,
-    xSpeed: 0,
-    ySpeed: 0,
-    isJumping: false,
-    isWinning: false
-  },
-  Platforms: [],
-  ScoreKeeping: {
-    lowestJumpCount: 1000,
-    currentJumpCount: 0,
-  }
-}
+        canvas {
+            border: 1px solid black;
+            display: block;
+            margin: 0 auto;
+        }
+        .menu{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 800px;
+            margin:auto;
+            margin-top:1rem;
+            font-size: large;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu">
+        <button id="restartbtn">Restart</button>
+        <button id="pausebtn">Pause</button> <!-- Pause button added -->
+        <div class="highscore"><span id="lowestJumpCount"></span></div>
+    </div>
+    
+    <canvas id="gameCanvas" width="800" height="650"></canvas>
 
-function AddPlatform(xmod, ymod) {
-  let platform = {
-    x: 0 + xmod,
-    y: canvasElement.height - constants.PLATFORM_HEIGHT + ymod,
-    width: constants.PLATFORM_WIDTH,
-    height: constants.PLATFORM_HEIGHT,
-  }
-  return platform;
-}
+    <div class="menu">    
+        <div class="currentjump"><span>Jumps: </span><span id="currentJumpCount"></span></div>
+    </div>
+    
+    <script>
+        let canvasElement = document.getElementById("gameCanvas");
+        let ctx = canvasElement.getContext("2d");
 
-gamestate.Platforms.push(AddPlatform(200, 0));
-gamestate.Platforms.push(AddPlatform(50, -50));
-gamestate.Platforms.push(AddPlatform(200, -200));
-gamestate.Platforms.push(AddPlatform(300, -350));
-gamestate.Platforms.push(AddPlatform(550, -200));
-gamestate.Platforms.push(AddPlatform(700, -300));
-gamestate.Platforms.push(AddPlatform(600, -460));
-gamestate.Platforms.push(AddPlatform(350, -550));
-gamestate.Platforms.push(AddPlatform(50, -500));
+        const constants = {
+          PLAYER_WIDTH: 50,
+          PLAYER_HEIGHT: 50,
+          PLATFORM_WIDTH: 100,
+          PLATFORM_HEIGHT: 20,
+          GRAVITY: 1,
+          JUMP_FORCE: 15,
+          PLAYER_SPEED: 5,
+        }
 
-// Handle keyboard input
-document.addEventListener("keydown", (event) => {
-  if (event.code === "Space" && !gamestate.Player.isJumping) {
-    gamestate.Player.isJumping = true;
-    gamestate.Player.ySpeed = -constants.JUMP_FORCE;
-    gamestate.ScoreKeeping.currentJumpCount += 1;
-  }
-  if (event.code === "ArrowLeft") {
-    gamestate.Player.xSpeed = -constants.PLAYER_SPEED;
-  }
-  if (event.code === "ArrowRight") {
-    gamestate.Player.xSpeed = constants.PLAYER_SPEED;
-  }
-});
+        const gamestate = {
+          Player: {
+            x: canvasElement.width / 2 - constants.PLAYER_WIDTH / 2,
+            y: canvasElement.height - constants.PLAYER_HEIGHT,
+            xSpeed: 0,
+            ySpeed: 0,
+            isJumping: false,
+            isWinning: false
+          },
+          Platforms: [],
+          ScoreKeeping: {
+            lowestJumpCount: 1000,
+            currentJumpCount: 0,
+          }
+        }
 
-document.addEventListener("keyup", (event) => {
-  if (event.code === "ArrowLeft" || event.code === "ArrowRight") {
-    gamestate.Player.xSpeed = 0;
-  }
-});
+        function AddPlatform(xmod, ymod) {
+          let platform = {
+            x: 0 + xmod,
+            y: canvasElement.height - constants.PLATFORM_HEIGHT + ymod,
+            width: constants.PLATFORM_WIDTH,
+            height: constants.PLATFORM_HEIGHT,
+          }
+          return platform;
+        }
 
+        gamestate.Platforms.push(AddPlatform(200, 0));
+        gamestate.Platforms.push(AddPlatform(50, -50));
+        gamestate.Platforms.push(AddPlatform(200, -200));
+        gamestate.Platforms.push(AddPlatform(300, -350));
+        gamestate.Platforms.push(AddPlatform(550, -200));
+        gamestate.Platforms.push(AddPlatform(700, -300));
+        gamestate.Platforms.push(AddPlatform(600, -460));
+        gamestate.Platforms.push(AddPlatform(350, -550));
+        gamestate.Platforms.push(AddPlatform(50, -500));
 
-//Menu
-let button = document.getElementById("restartbtn");
+        let button = document.getElementById("restartbtn");
 
-button.addEventListener("click", resetGame);
+        button.addEventListener("click", resetGame);
 
-let lowestJumpCountElement = document.getElementById("lowestJumpCount");
-let currentJumpCountElement = document.getElementById("currentJumpCount");
+        let pauseButton = document.getElementById("pausebtn");
+        let isPaused = false;
 
-//Reset gamestate.Player and update highscore if beaten.
-function resetGame() {
-  button.blur();
+        pauseButton.addEventListener("click", () => {
+          if (isPaused) {
+            isPaused = false;
+            pauseButton.innerText = "Pause";
+            requestAnimationFrame(update);
+          } else {
+            isPaused = true;
+            pauseButton.innerText = "Resume";
+          }
+        });
 
-  if (gamestate.Player.isWinning && gamestate.ScoreKeeping.currentJumpCount > 0 && gamestate.ScoreKeeping.currentJumpCount < gamestate.ScoreKeeping.lowestJumpCount) {
-    gamestate.ScoreKeeping.lowestJumpCount = gamestate.ScoreKeeping.currentJumpCount;
-  }
-  gamestate.ScoreKeeping.currentJumpCount = 0;
-  lowestJumpCountElement.innerText = "Highscore (fewest jumps to reach golden platform): " + gamestate.ScoreKeeping.lowestJumpCount;
+        let lowestJumpCountElement = document.getElementById("lowestJumpCount");
+        let currentJumpCountElement = document.getElementById("currentJumpCount");
 
-  gamestate.Player.x = canvasElement.width / 2 - constants.PLAYER_WIDTH / 2;
-  gamestate.Player.y = canvasElement.height - constants.PLAYER_HEIGHT;
-  gamestate.Player.xSpeed = 0;
-  gamestate.Player.ySpeed = 0;
-  gamestate.Player.isJumping = false;
-  gamestate.Player.isWinning = false;
+        function resetGame() {
+          button.blur();
 
-}
+          if (gamestate.Player.isWinning && gamestate.ScoreKeeping.currentJumpCount > 0 && gamestate.ScoreKeeping.currentJumpCount < gamestate.ScoreKeeping.lowestJumpCount) {
+            gamestate.ScoreKeeping.lowestJumpCount = gamestate.ScoreKeeping.currentJumpCount;
+          }
+          gamestate.ScoreKeeping.currentJumpCount = 0;
+          lowestJumpCountElement.innerText = "Highscore (fewest jumps to reach golden platform): " + gamestate.ScoreKeeping.lowestJumpCount;
 
-// Update function / Game loop
-function update() {
-  // Apply gravity to the gamestate.Player
-  gamestate.Player.ySpeed += constants.GRAVITY;
+          gamestate.Player.x = canvasElement.width / 2 - constants.PLAYER_WIDTH / 2;
+          gamestate.Player.y = canvasElement.height - constants.PLAYER_HEIGHT;
+          gamestate.Player.xSpeed = 0;
+          gamestate.Player.ySpeed = 0;
+          gamestate.Player.isJumping = false;
+          gamestate.Player.isWinning = false;
+        }
 
-  // Update player position
-  gamestate.Player.x += gamestate.Player.xSpeed;
-  gamestate.Player.y += gamestate.Player.ySpeed;
+        function update() {
+          if (isPaused) {
+            return;
+          }
 
-  // Keep the player within bounds
-  if (gamestate.Player.x < 0) {
-    gamestate.Player.x = 0;
-  }
-  if (gamestate.Player.x + constants.PLAYER_WIDTH > canvasElement.width) {
-    gamestate.Player.x = canvasElement.width - constants.PLAYER_WIDTH;
-  }
-  if (gamestate.Player.y + constants.PLAYER_HEIGHT > canvasElement.height) {
-    gamestate.Player.y = canvasElement.height - constants.PLAYER_HEIGHT;
-    gamestate.Player.isJumping = false;
-    gamestate.Player.ySpeed = 0;
-  }
+          gamestate.Player.ySpeed += constants.GRAVITY;
+          gamestate.Player.x += gamestate.Player.xSpeed;
+          gamestate.Player.y += gamestate.Player.ySpeed;
 
-  // Check for collision with the platform
-  gamestate.Platforms.forEach((platform, index) => {
-    if (
-      gamestate.Player.x < platform.x + platform.width &&
-      gamestate.Player.x + constants.PLAYER_WIDTH > platform.x &&
-      gamestate.Player.y + constants.PLAYER_HEIGHT > platform.y &&
-      gamestate.Player.y < platform.y + platform.height
-    ) {
+          if (gamestate.Player.x < 0) {
+            gamestate.Player.x = 0;
+          }
+          if (gamestate.Player.x + constants.PLAYER_WIDTH > canvasElement.width) {
+            gamestate.Player.x = canvasElement.width - constants.PLAYER_WIDTH;
+          }
+          if (gamestate.Player.y + constants.PLAYER_HEIGHT > canvasElement.height) {
+            gamestate.Player.y = canvasElement.height - constants.PLAYER_HEIGHT;
+            gamestate.Player.isJumping = false;
+            gamestate.Player.ySpeed = 0;
+          }
 
-      gamestate.Player.isJumping = false;
-      gamestate.Player.ySpeed = 1;
+          gamestate.Platforms.forEach((platform, index) => {
+            if (
+              gamestate.Player.x < platform.x + platform.width &&
+              gamestate.Player.x + constants.PLAYER_WIDTH > platform.x &&
+              gamestate.Player.y + constants.PLAYER_HEIGHT > platform.y &&
+              gamestate.Player.y < platform.y + platform.height
+            ) {
+              gamestate.Player.isJumping = false;
+              gamestate.Player.ySpeed = 1;
 
-      if (index === gamestate.Platforms.length - 10) {
-        gamestate.Player.isWinning = true;
-        gamestate.Player.y = platform.y - constants.PLAYER_HEIGHT;
-        setTimeout(() => {
-          resetGame();
-        }, 1000);
-      }
-    }
+              if (index === gamestate.Platforms.length - 10) {
+                gamestate.Player.isWinning = true;
+                gamestate.Player.y = platform.y - constants.PLAYER_HEIGHT;
+                setTimeout(() => {
+                  resetGame();
+                }, 1000);
+              }
+            }
+          });
 
-  });
+          ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
-  // Clear the canvasElement
-  ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+          ctx.fillStyle = "blue";
+          ctx.fillRect(gamestate.Player.x, gamestate.Player.y, constants.PLAYER_WIDTH, constants.PLAYER_HEIGHT);
 
-  // Draw the gamestate.Player
-  ctx.fillStyle = "blue";
-  ctx.fillRect(gamestate.Player.x, gamestate.Player.y, constants.PLAYER_WIDTH, constants.PLAYER_HEIGHT);
+          ctx.fillStyle = "green";
+          gamestate.Platforms.forEach((platform, index) => {
+            if (index === gamestate.Platforms.length - 1) {
+              ctx.fillStyle = "gold";
+            }
+            ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+          });
 
-  // Draw the platform
-  ctx.fillStyle = "green";
-  gamestate.Platforms.forEach((platform, index) => {
-    if (index === gamestate.Platforms.length - 1) {
-      ctx.fillStyle = "gold";
-    }
-    ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-  });
+          currentJumpCountElement.innerText = gamestate.ScoreKeeping.currentJumpCount;
+          requestAnimationFrame(update);
+        }
 
-  currentJumpCountElement.innerText = gamestate.ScoreKeeping.currentJumpCount;
-
-  // Request the next animation frame
-  window.requestAnimationFrame(update);
-}
-
-// Start the game loop
-resetGame();
-update();
-
-//future development: move the view upwards with ctx.translate(0,100);
+        resetGame();
+        update();
+    </script>
+</body>
+</html>
