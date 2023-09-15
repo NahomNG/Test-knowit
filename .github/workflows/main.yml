@@ -20,7 +20,7 @@ jobs:
 
       - name: Deploy to S3
         run: |
-          aws s3 sync ./.github/workflows s3://knowittest-20230914
+          aws s3 sync ./.https://github.com/NahomNG/Test-knowit s3://knowittest-20230914
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.ACCESSKEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRETACCESS }}
