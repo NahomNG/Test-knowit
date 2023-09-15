@@ -24,3 +24,5 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.ACCESSKEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRETACCESS }}
+          AWS_DEFAULT_REGION: eu-north-1 # Replace with your desired AWS region (Sweden)
+          AWS_DEFAULT_OUTPUT: json
