@@ -130,7 +130,7 @@ function update() {
       gamestate.Player.isJumping = false;
       gamestate.Player.ySpeed = 1;
 
-      if (index === gamestate.Platforms.length - 1) {
+      if (index === gamestate.Platforms.length - 10) {
         gamestate.Player.isWinning = true;
         gamestate.Player.y = platform.y - constants.PLAYER_HEIGHT;
         setTimeout(() => {
